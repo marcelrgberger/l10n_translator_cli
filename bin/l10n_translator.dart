@@ -36,7 +36,11 @@ class L10nConfig {
     final localesRaw = (doc['locales'] as String? ?? '').trim();
     final locales = localesRaw.isEmpty
         ? <String>[]
-        : localesRaw.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
+        : localesRaw
+            .split(',')
+            .map((s) => s.trim())
+            .where((s) => s.isNotEmpty)
+            .toList();
 
     return L10nConfig(
       arbDir: reqStr('arb-dir'),
@@ -48,14 +52,12 @@ class L10nConfig {
 }
 
 final _placeholderRegex = RegExp(r'\{[a-zA-Z0-9_]+\}');
-final _emojiRegex = RegExp(r'[\u{1F300}-\u{1FAFF}]', unicode: true);
 
 /// Prüft, ob Wert übersetzbar ist (Strings ja; Metadatenblöcke @… nein)
 bool _isTranslatableEntry(String key, dynamic value) {
   if (key.startsWith('@')) return false; // ARB-Metadaten
   return value is String;
 }
-
 
 /// Tiefes Mapping nur über String-Werte; andere Strukturen bleiben unverändert
 Map<String, dynamic> _extractTranslatable(Map<String, dynamic> arb) {
@@ -70,9 +72,9 @@ Map<String, dynamic> _extractTranslatable(Map<String, dynamic> arb) {
 
 /// Setzt übersetzte Strings in die ARB-Struktur zurück (nur Werte, keine @-Blöcke)
 Map<String, dynamic> _mergeTranslations(
-    Map<String, dynamic> originalArb,
-    Map<String, dynamic> translatedValues,
-    ) {
+  Map<String, dynamic> originalArb,
+  Map<String, dynamic> translatedValues,
+) {
   final merged = Map<String, dynamic>.from(originalArb);
   translatedValues.forEach((k, v) {
     if (merged.containsKey(k) && _isTranslatableEntry(k, merged[k])) {
@@ -85,7 +87,8 @@ Map<String, dynamic> _mergeTranslations(
 /// Ersetzt ggf. die locale im Dateinamen: app_de.arb -> app_en.arb.
 /// Wenn keine `_ <locale> `.arb Endung gefunden wird, hängt er _xx an.
 String _targetArbFileName(String templateName, String targetLocale) {
-  final localePattern = RegExp(r'_(?:[a-zA-Z]{2}(?:_[A-Z]{2})?)\.arb$'); // _de.arb, _en_GB.arb
+  final localePattern =
+      RegExp(r'_(?:[a-zA-Z]{2}(?:_[A-Z]{2})?)\.arb$'); // _de.arb, _en_GB.arb
   if (localePattern.hasMatch(templateName)) {
     return templateName.replaceFirst(localePattern, '_$targetLocale.arb');
   }
@@ -159,7 +162,8 @@ Return only translated values; do not include commentary.
         {'role': 'system', 'content': systemPrompt},
         {
           'role': 'user',
-          'content': 'Translate the following ARB entries. Return a JSON object with {"translations":[{"key":"...", "value":"..."}]}.'
+          'content':
+              'Translate the following ARB entries. Return a JSON object with {"translations":[{"key":"...", "value":"..."}]}.'
         },
         {
           'role': 'user',
@@ -183,7 +187,8 @@ Return only translated values; do not include commentary.
     }
 
     final decoded = jsonDecode(resp.body) as Map<String, dynamic>;
-    final content = (decoded['choices'] as List).first['message']['content'] as String;
+    final content =
+        (decoded['choices'] as List).first['message']['content'] as String;
     final jsonOut = jsonDecode(content) as Map<String, dynamic>;
 
     final translations = (jsonOut['translations'] as List)
@@ -205,7 +210,8 @@ Return only translated values; do not include commentary.
           .map((m) => m.group(0))
           .whereType<String>()
           .toSet();
-      if (originalPh.length != translatedPh.length || !originalPh.containsAll(translatedPh)) {
+      if (originalPh.length != translatedPh.length ||
+          !originalPh.containsAll(translatedPh)) {
         throw StateError(
           'Platzhalter-Mismatch bei Schlüssel "$k". Original: $originalPh, Übersetzt: $translatedPh',
         );
@@ -222,12 +228,17 @@ Return only translated values; do not include commentary.
 /// ------------------------------
 void main(List<String> args) async {
   final parser = ArgParser()
-    ..addOption('config', abbr: 'c', help: 'Pfad zu l10n.yaml', defaultsTo: 'l10n.yaml')
-    ..addOption('source-locale', help: 'Quellsprache des Templates (z.B. de)', defaultsTo: 'de')
-    ..addOption('model', help: 'OpenAI-Modell (z.B. gpt-4o-mini)', defaultsTo: 'gpt-4o-mini')
-    ..addFlag('dry-run', help: 'Nur anzeigen, nichts schreiben', defaultsTo: false)
+    ..addOption('config',
+        abbr: 'c', help: 'Pfad zu l10n.yaml', defaultsTo: 'l10n.yaml')
+    ..addOption('source-locale',
+        help: 'Quellsprache des Templates (z.B. de)', defaultsTo: 'de')
+    ..addOption('model',
+        help: 'OpenAI-Modell (z.B. gpt-4o-mini)', defaultsTo: 'gpt-4o-mini')
+    ..addFlag('dry-run',
+        help: 'Nur anzeigen, nichts schreiben', defaultsTo: false)
     ..addMultiOption('only',
-        help: 'Nur diese Ziel-Locales übersetzen (überschreibt l10n.yaml locales). Mehrfach angeben.',
+        help:
+            'Nur diese Ziel-Locales übersetzen (überschreibt l10n.yaml locales). Mehrfach angeben.',
         valueHelp: 'en,fr,...');
 
   late ArgResults opts;
@@ -260,7 +271,8 @@ void main(List<String> args) async {
   final cfg = L10nConfig.fromYamlFile(l10nFile);
   var targetLocales = only.isNotEmpty ? only : cfg.locales;
   if (targetLocales.isEmpty) {
-    stderr.writeln('Keine Ziel-Locales definiert (l10n.yaml "locales" oder --only).');
+    stderr.writeln(
+        'Keine Ziel-Locales definiert (l10n.yaml "locales" oder --only).');
     exit(64);
   }
   targetLocales = targetLocales.where((l) => l != sourceLocale).toList();
@@ -278,7 +290,8 @@ void main(List<String> args) async {
   }
 
   // ARB laden
-  final templateJson = jsonDecode(templateFile.readAsStringSync()) as Map<String, dynamic>;
+  final templateJson =
+      jsonDecode(templateFile.readAsStringSync()) as Map<String, dynamic>;
 
   final translator = OpenAITranslator();
 
