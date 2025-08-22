@@ -56,6 +56,7 @@ bool _isTranslatableEntry(String key, dynamic value) {
   return value is String;
 }
 
+
 /// Tiefes Mapping nur über String-Werte; andere Strukturen bleiben unverändert
 Map<String, dynamic> _extractTranslatable(Map<String, dynamic> arb) {
   final out = <String, dynamic>{};
@@ -82,7 +83,7 @@ Map<String, dynamic> _mergeTranslations(
 }
 
 /// Ersetzt ggf. die locale im Dateinamen: app_de.arb -> app_en.arb.
-/// Wenn keine _<locale>.arb Endung gefunden wird, hängt er _xx an.
+/// Wenn keine `_ <locale> `.arb Endung gefunden wird, hängt er _xx an.
 String _targetArbFileName(String templateName, String targetLocale) {
   final localePattern = RegExp(r'_(?:[a-zA-Z]{2}(?:_[A-Z]{2})?)\.arb$'); // _de.arb, _en_GB.arb
   if (localePattern.hasMatch(templateName)) {
