@@ -1,0 +1,17 @@
+name: l10n_translator_cli
+description: CLI zum Übersetzen von ARB-Dateien anhand von l10n.yaml via OpenAI.
+version: 0.1.0
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  yaml: ^3.1.2
+  args: ^2.4.2
+  http: ^1.2.2
+  path: ^1.9.0
+
+dev_dependencies:
+  lints: ^6.0.0
+
+executables:
+  l10n_translator: l10n_translator
