@@ -98,4 +98,4 @@ Beispiele:
 
 ## Lizenz
 
-Füge hier die passende Lizenz-Information ein MIT, Apache-2.0
+MIT
